@@ -1,0 +1,1800 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stylish ToDo</title>
+  <style>
+    :root {
+      --bg-1: #0b1020;
+      --bg-2: #151b33;
+      --glass: rgba(255, 255, 255, 0.08);
+      --glass-border: rgba(255, 255, 255, 0.2);
+      --text: #f5f7ff;
+      --muted: #b6bfdc;
+      --accent: #8b5cf6;
+      --accent-2: #06b6d4;
+      --danger: #ef4444;
+      --ok: #22c55e;
+      --shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+      color: var(--text);
+      min-height: 100vh;
+      background:
+        radial-gradient(1200px 700px at 10% -10%, #3b82f6 0%, transparent 55%),
+        radial-gradient(1000px 600px at 100% 20%, #9333ea 0%, transparent 50%),
+        linear-gradient(135deg, var(--bg-1), var(--bg-2));
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .app {
+      width: min(760px, 100%);
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      padding: 24px;
+    }
+
+    .title {
+      margin: 0;
+      font-size: clamp(1.6rem, 1.1rem + 2vw, 2.2rem);
+      letter-spacing: 0.02em;
+    }
+
+    .subtitle {
+      margin: 6px 0 18px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .input-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .new-meta-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      align-items: end;
+      margin-bottom: 10px;
+    }
+
+    @media (max-width: 560px) {
+      .new-meta-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .new-meta-row-wide {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .field-label {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-bottom: 4px;
+      display: block;
+    }
+
+    .field-inline {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .date-input,
+    .priority-select {
+      width: 100%;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 0.95rem;
+      outline: none;
+    }
+
+    .priority-select {
+      cursor: pointer;
+      min-width: 120px;
+    }
+
+    .date-input:focus,
+    .priority-select:focus {
+      border-color: #a78bfa;
+      box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
+    }
+
+    .todo-input {
+      width: 100%;
+      border: 1px solid transparent;
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text);
+      border-radius: 14px;
+      padding: 14px 16px;
+      outline: none;
+      font-size: 1rem;
+      transition: 0.2s ease;
+    }
+
+    .todo-input::placeholder {
+      color: #d4daf0;
+    }
+
+    .todo-input:focus {
+      border-color: #a78bfa;
+      box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+    }
+
+    .btn {
+      border: 0;
+      border-radius: 14px;
+      padding: 12px 16px;
+      font-weight: 700;
+      color: white;
+      cursor: pointer;
+      transition: transform 0.15s ease, opacity 0.2s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .suggestions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin: 0 0 14px;
+    }
+
+    .suggestion-chip {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 999px;
+      padding: 8px 12px;
+      cursor: pointer;
+      transition: 0.2s ease;
+      font-size: 0.88rem;
+    }
+
+    .suggestion-chip:hover {
+      border-color: rgba(167, 139, 250, 0.8);
+      background: rgba(167, 139, 250, 0.2);
+    }
+
+    .suggestion-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+
+    .suggestion-header-label {
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    .suggestion-edit-toggle {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-radius: 10px;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.85rem;
+    }
+
+    .suggestion-edit-toggle:hover {
+      background: rgba(167, 139, 250, 0.2);
+      border-color: rgba(167, 139, 250, 0.5);
+    }
+
+    .suggestion-edit-panel {
+      margin-top: 10px;
+      padding: 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(0, 0, 0, 0.15);
+    }
+
+    .suggestion-edit-panel[hidden] {
+      display: none;
+    }
+
+    .suggestion-edit-textarea {
+      width: 100%;
+      min-height: 140px;
+      margin-top: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 0.95rem;
+      line-height: 1.5;
+      resize: vertical;
+      outline: none;
+      font-family: inherit;
+    }
+
+    .suggestion-edit-textarea:focus {
+      border-color: #a78bfa;
+      box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
+    }
+
+    .suggestion-edit-toolbar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .suggestion-edit-hint {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    .filter {
+      background: rgba(255, 255, 255, 0.12);
+      color: var(--text);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 9px 12px;
+      border-radius: 999px;
+      cursor: pointer;
+    }
+
+    .filter.active {
+      border-color: transparent;
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.9), rgba(6, 182, 212, 0.9));
+    }
+
+    .todo-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 10px;
+    }
+
+    .timer-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 108px;
+    }
+
+    .timer-btns {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .timer-btn {
+      border-radius: 10px;
+      padding: 6px 8px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.1);
+      transition: opacity 0.15s ease, transform 0.1s ease;
+    }
+
+    .timer-btn:hover:not(:disabled) {
+      transform: translateY(-1px);
+    }
+
+    .timer-btn:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    .timer-start {
+      border-color: rgba(34, 197, 94, 0.55);
+      background: rgba(34, 197, 94, 0.2);
+      color: #bbf7d0;
+    }
+
+    .timer-pause {
+      border-color: rgba(250, 204, 21, 0.55);
+      background: rgba(250, 204, 21, 0.15);
+      color: #fef9c3;
+    }
+
+    .timer-done {
+      border-color: rgba(96, 165, 250, 0.55);
+      background: rgba(59, 130, 246, 0.2);
+      color: #dbeafe;
+    }
+
+    .timer-line {
+      font-size: 0.72rem;
+      color: var(--muted);
+      line-height: 1.3;
+      min-height: 2.6em;
+    }
+
+    .timer-line strong {
+      color: #e9d5ff;
+      font-weight: 700;
+    }
+
+    .badge-time {
+      border-color: rgba(52, 211, 153, 0.45);
+      color: #bbf7d0;
+      font-size: 0.75rem;
+    }
+
+    .time-log-details {
+      margin-top: 6px;
+      max-width: 100%;
+    }
+
+    .time-log-details summary {
+      cursor: pointer;
+      font-size: 0.72rem;
+      color: #c4b5fd;
+      user-select: none;
+      list-style: none;
+    }
+
+    .time-log-details summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .time-log-details summary::before {
+      content: "▸ ";
+      display: inline-block;
+      transition: transform 0.15s ease;
+    }
+
+    .time-log-details[open] summary::before {
+      transform: rotate(90deg);
+    }
+
+    .time-log-list {
+      margin: 8px 0 0;
+      padding-left: 1.1em;
+      font-size: 0.7rem;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .time-log-meta {
+      margin: 8px 0 0;
+      font-size: 0.7rem;
+      color: var(--muted);
+    }
+
+    .time-log-note {
+      margin: 6px 0 0;
+      font-size: 0.68rem;
+      color: #a5b4fc;
+      font-style: italic;
+    }
+
+    .time-stats-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 10px;
+      margin-top: 6px;
+      font-size: 0.7rem;
+      color: var(--muted);
+      line-height: 1.35;
+    }
+
+    .time-stats-row strong {
+      color: #e9d5ff;
+      font-weight: 600;
+    }
+
+    .session-block {
+      margin-top: 10px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .session-block:first-of-type {
+      margin-top: 6px;
+      padding-top: 0;
+      border-top: 0;
+    }
+
+    .session-title {
+      font-size: 0.72rem;
+      color: #c4b5fd;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .badge-attempt {
+      border-color: rgba(129, 140, 248, 0.55);
+      color: #c7d2fe;
+      font-weight: 600;
+    }
+
+    .todo-item {
+      display: grid;
+      grid-template-columns: minmax(112px, auto) 1fr auto;
+      align-items: start;
+      gap: 12px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      padding: 12px;
+      animation: show 0.2s ease;
+      margin-left: calc(var(--nest-depth, 0) * 18px);
+      border-left: 3px solid transparent;
+    }
+
+    .todo-item.is-sub {
+      border-left-color: rgba(167, 139, 250, 0.55);
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .badge-role {
+      border-color: rgba(6, 182, 212, 0.45);
+      color: #a5f3fc;
+      font-weight: 600;
+    }
+
+    .badge-tag {
+      border-color: rgba(52, 211, 153, 0.45);
+      color: #bbf7d0;
+      cursor: pointer;
+      font: inherit;
+      font-size: 0.75rem;
+    }
+
+    .badge-tag:hover {
+      background: rgba(52, 211, 153, 0.15);
+    }
+
+    .todo-body {
+      min-width: 0;
+    }
+
+    .todo-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 6px;
+      align-items: center;
+    }
+
+    .badge {
+      font-size: 0.75rem;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .badge-priority-high {
+      border-color: rgba(248, 113, 113, 0.5);
+      color: #fecaca;
+    }
+
+    .badge-priority-medium {
+      border-color: rgba(250, 204, 21, 0.45);
+      color: #fef08a;
+    }
+
+    .badge-priority-low {
+      border-color: rgba(96, 165, 250, 0.45);
+      color: #bfdbfe;
+    }
+
+    .badge-due {
+      border-color: rgba(167, 139, 250, 0.45);
+      color: #e9d5ff;
+    }
+
+    .badge-due.overdue {
+      border-color: rgba(248, 113, 113, 0.6);
+      color: #fecaca;
+      background: rgba(239, 68, 68, 0.15);
+    }
+
+    .todo-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .edit-btn {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-radius: 10px;
+      padding: 8px 10px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.85rem;
+    }
+
+    .reuse-btn {
+      background: rgba(6, 182, 212, 0.18);
+      color: #cffafe;
+      border: 1px solid rgba(6, 182, 212, 0.45);
+      border-radius: 10px;
+      padding: 8px 10px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.85rem;
+    }
+
+    .reuse-btn:hover {
+      background: rgba(6, 182, 212, 0.28);
+    }
+
+    .todo-edit {
+      display: grid;
+      gap: 8px;
+    }
+
+    .edit-text {
+      width: 100%;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      background: rgba(0, 0, 0, 0.2);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 1rem;
+      outline: none;
+    }
+
+    .edit-text:focus {
+      border-color: #a78bfa;
+    }
+
+    .edit-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: end;
+    }
+
+    .edit-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn-save {
+      background: rgba(34, 197, 94, 0.25);
+      border: 1px solid rgba(34, 197, 94, 0.45);
+      color: #bbf7d0;
+      border-radius: 10px;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .btn-cancel {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    @keyframes show {
+      from {
+        opacity: 0;
+        transform: translateY(4px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .todo-text {
+      word-break: break-word;
+    }
+
+    .todo-item.done .todo-text {
+      text-decoration: line-through;
+      color: var(--muted);
+    }
+
+    .delete {
+      background: rgba(239, 68, 68, 0.15);
+      color: #fecaca;
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      border-radius: 10px;
+      padding: 8px 10px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .footer {
+      margin-top: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .clear-btn {
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 8px 10px;
+      cursor: pointer;
+    }
+
+    .tag-filters {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+      align-items: center;
+    }
+
+    .tag-filters-label {
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-right: 4px;
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <h1 class="title">Super Stylish ToDo</h1>
+    <p class="subtitle">1ファイルで動く、見た目重視のToDoリスト</p>
+
+    <div class="input-row">
+      <input id="todoInput" class="todo-input" type="text" placeholder="やることを入力して Enter or 追加" />
+      <button id="addBtn" class="btn btn-primary">追加</button>
+    </div>
+
+    <div class="new-meta-row">
+      <div class="field-inline">
+        <label class="field-label" for="newDueDate">締切日（任意）</label>
+        <input id="newDueDate" class="date-input" type="date" />
+      </div>
+      <div class="field-inline">
+        <label class="field-label" for="newPriority">優先度</label>
+        <select id="newPriority" class="priority-select" aria-label="新規タスクの優先度">
+          <option value="high">高</option>
+          <option value="medium" selected>中</option>
+          <option value="low">低</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="new-meta-row-wide">
+      <div class="field-inline">
+        <label class="field-label" for="newParentId">親タスク（任意・サブタスクにする）</label>
+        <select id="newParentId" class="priority-select" aria-label="親タスク">
+          <option value="">（メインタスクとして追加）</option>
+        </select>
+      </div>
+      <div class="field-inline">
+        <label class="field-label" for="newTags">ラベル（タグ）</label>
+        <input id="newTags" class="date-input" type="text" placeholder="例: 仕事, 集中, 週末（カンマ区切り）" />
+      </div>
+    </div>
+
+    <div class="suggestion-header">
+      <span class="suggestion-header-label">提案（タップで入力欄に反映／もう一度タップで追加）</span>
+      <button type="button" id="toggleSuggestionEdit" class="suggestion-edit-toggle" aria-expanded="false" aria-controls="suggestionEditPanel">
+        提案を編集
+      </button>
+    </div>
+    <div id="suggestions" class="suggestions"></div>
+    <div id="suggestionEditPanel" class="suggestion-edit-panel" hidden>
+      <label class="field-label" for="suggestionEditText">提案リスト（1行に1つ・最大50件）</label>
+      <textarea id="suggestionEditText" class="suggestion-edit-textarea" spellcheck="false" placeholder="例:&#10;水を飲む&#10;5分ストレッチする"></textarea>
+      <div class="suggestion-edit-toolbar">
+        <button type="button" id="saveSuggestionList" class="btn-save">保存して反映</button>
+        <button type="button" id="resetSuggestionList" class="btn-cancel">初期の提案に戻す</button>
+      </div>
+      <p class="suggestion-edit-hint">保存するとランダム表示される4件の候補が、このリストから選ばれます。</p>
+    </div>
+
+    <div class="toolbar">
+      <button class="filter active" data-filter="all">すべて</button>
+      <button class="filter" data-filter="active">未完了</button>
+      <button class="filter" data-filter="done">完了</button>
+    </div>
+
+    <div id="tagFilters" class="tag-filters" aria-label="ラベルで絞り込み"></div>
+
+    <ul id="todoList" class="todo-list"></ul>
+
+    <div class="footer">
+      <span id="stats">0件（未完了 0件）</span>
+      <button id="clearDoneBtn" class="clear-btn">完了タスクを削除</button>
+    </div>
+  </main>
+
+  <script>
+    const STORAGE_KEY_LEGACY = "stylish_todo_items_v1";
+    const STORAGE_KEY_V2 = "stylish_todo_items_v2";
+    const STORAGE_KEY_V3 = "stylish_todo_items_v3";
+    const STORAGE_KEY = "stylish_todo_items_v4";
+    const STORAGE_KEY_SUGGESTIONS = "stylish_todo_suggestion_list_v1";
+
+    const todoInput = document.getElementById("todoInput");
+    const newDueDate = document.getElementById("newDueDate");
+    const newPriority = document.getElementById("newPriority");
+    const newParentId = document.getElementById("newParentId");
+    const newTags = document.getElementById("newTags");
+    const addBtn = document.getElementById("addBtn");
+    const todoList = document.getElementById("todoList");
+    const suggestions = document.getElementById("suggestions");
+    const stats = document.getElementById("stats");
+    const clearDoneBtn = document.getElementById("clearDoneBtn");
+    const filterButtons = [...document.querySelectorAll(".filter")];
+    const tagFiltersEl = document.getElementById("tagFilters");
+    const toggleSuggestionEdit = document.getElementById("toggleSuggestionEdit");
+    const suggestionEditPanel = document.getElementById("suggestionEditPanel");
+    const suggestionEditText = document.getElementById("suggestionEditText");
+    const saveSuggestionListBtn = document.getElementById("saveSuggestionList");
+    const resetSuggestionListBtn = document.getElementById("resetSuggestionList");
+
+    let todos = loadTodos();
+    let currentFilter = "all";
+    let filterTag = null;
+    let editingId = null;
+    const suggestionPoolDefault = [
+      "水を飲む",
+      "5分ストレッチする",
+      "今日の最優先タスクを決める",
+      "メールを10分だけ整理する",
+      "机の上を片付ける",
+      "散歩を15分する",
+      "読書を20分する",
+      "日記を3行書く",
+      "明日の予定を確認する",
+      "寝る前にスマホを置く"
+    ];
+    let activeSuggestions = [];
+
+    function parseSuggestionLines(text) {
+      if (typeof text !== "string") return [];
+      const lines = text
+        .split(/\r?\n/)
+        .map((s) => s.trim())
+        .filter(Boolean);
+      return [...new Set(lines)].slice(0, 50);
+    }
+
+    function getSuggestionList() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY_SUGGESTIONS);
+        if (!raw) return [...suggestionPoolDefault];
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) return [...suggestionPoolDefault];
+        const cleaned = [...new Set(parsed.map((s) => String(s).trim()).filter(Boolean))].slice(0, 50);
+        return cleaned.length ? cleaned : [...suggestionPoolDefault];
+      } catch {
+        return [...suggestionPoolDefault];
+      }
+    }
+
+    function setSuggestionListFromTextarea() {
+      const lines = parseSuggestionLines(suggestionEditText.value);
+      if (lines.length === 0) {
+        alert("1件以上の提案を入力してください。");
+        return false;
+      }
+      localStorage.setItem(STORAGE_KEY_SUGGESTIONS, JSON.stringify(lines));
+      return true;
+    }
+
+    function fillSuggestionEditor() {
+      suggestionEditText.value = getSuggestionList().join("\n");
+    }
+
+    function resetSuggestionListToDefault() {
+      localStorage.removeItem(STORAGE_KEY_SUGGESTIONS);
+      suggestionEditText.value = suggestionPoolDefault.join("\n");
+      activeSuggestions = pickSuggestions();
+      renderSuggestions();
+    }
+
+    function parseTagsInput(str) {
+      if (typeof str !== "string") return [];
+      const parts = str.split(/[,，]/).map((s) => s.trim()).filter(Boolean);
+      return [...new Set(parts)].slice(0, 20);
+    }
+
+    function normalizeTags(raw) {
+      if (Array.isArray(raw)) {
+        return [...new Set(raw.map((s) => String(s).trim()).filter(Boolean))].slice(0, 20);
+      }
+      if (typeof raw === "string") return parseTagsInput(raw);
+      return [];
+    }
+
+    function normalizeTimeSegments(raw) {
+      if (!Array.isArray(raw)) return [];
+      const out = [];
+      for (const s of raw) {
+        if (!s || typeof s !== "object") continue;
+        const a = Number(s.startMs);
+        const b = Number(s.endMs);
+        if (!Number.isFinite(a) || !Number.isFinite(b) || b < a) continue;
+        out.push({ startMs: Math.floor(a), endMs: Math.floor(b) });
+      }
+      return out.slice(0, 500);
+    }
+
+    function normalizeWorkSessions(raw) {
+      if (!Array.isArray(raw)) return [];
+      const out = [];
+      for (const w of raw) {
+        if (!w || typeof w !== "object") continue;
+        const attempt = Number(w.attempt);
+        const tm = Number(w.totalWorkMs);
+        let cam = w.completedAtMs == null || w.completedAtMs === "" ? null : Number(w.completedAtMs);
+        if (!Number.isFinite(tm) || tm < 0) continue;
+        if (!Number.isFinite(attempt) || attempt < 1) continue;
+        if (!Number.isFinite(cam) || cam <= 0) cam = null;
+        out.push({
+          attempt: Math.floor(attempt),
+          totalWorkMs: Math.floor(tm),
+          timeSegments: normalizeTimeSegments(w.timeSegments),
+          completedAtMs: cam
+        });
+      }
+      return out.slice(0, 200);
+    }
+
+    function normalizeTodo(raw) {
+      const t = raw && typeof raw === "object" ? raw : {};
+      const priority = t.priority === "high" || t.priority === "low" || t.priority === "medium" ? t.priority : "medium";
+      let dueDate = typeof t.dueDate === "string" ? t.dueDate : "";
+      if (dueDate && !/^\d{4}-\d{2}-\d{2}$/.test(dueDate)) dueDate = "";
+      let parentId = t.parentId == null || t.parentId === "" ? null : String(t.parentId);
+      const done = Boolean(t.done);
+      let trackingMs = Number.isFinite(Number(t.trackingMs)) ? Math.max(0, Math.floor(Number(t.trackingMs))) : 0;
+      let trackingSince =
+        t.trackingSince == null || t.trackingSince === "" ? null : Number(t.trackingSince);
+      if (!Number.isFinite(trackingSince) || trackingSince <= 0) trackingSince = null;
+      if (done) {
+        trackingSince = null;
+      }
+      let totalWorkMs =
+        t.totalWorkMs == null || t.totalWorkMs === "" ? null : Math.max(0, Math.floor(Number(t.totalWorkMs)));
+      if (!Number.isFinite(totalWorkMs)) totalWorkMs = null;
+      if (!done) {
+        totalWorkMs = null;
+      } else if (totalWorkMs == null) {
+        totalWorkMs = 0;
+      }
+      let timeSegments = normalizeTimeSegments(t.timeSegments);
+      let completedAtMs = t.completedAtMs == null || t.completedAtMs === "" ? null : Number(t.completedAtMs);
+      if (!Number.isFinite(completedAtMs) || completedAtMs <= 0) completedAtMs = null;
+      if (!done) {
+        completedAtMs = null;
+      }
+
+      let workSessions = normalizeWorkSessions(t.workSessions);
+      if (workSessions.length === 0 && done) {
+        const hasLegacy =
+          (totalWorkMs != null && totalWorkMs > 0) ||
+          (timeSegments && timeSegments.length > 0) ||
+          (completedAtMs != null && completedAtMs > 0);
+        if (hasLegacy) {
+          workSessions = [
+            {
+              attempt: 1,
+              totalWorkMs: totalWorkMs ?? 0,
+              timeSegments: normalizeTimeSegments(t.timeSegments),
+              completedAtMs: completedAtMs
+            }
+          ];
+        }
+      }
+      if (done && workSessions.length > 0) {
+        const last = workSessions[workSessions.length - 1];
+        totalWorkMs = last.totalWorkMs;
+        timeSegments = normalizeTimeSegments(last.timeSegments);
+        completedAtMs = last.completedAtMs;
+      }
+
+      return {
+        id: typeof t.id === "string" ? t.id : crypto.randomUUID(),
+        text: typeof t.text === "string" ? t.text : "",
+        done,
+        dueDate,
+        priority,
+        parentId,
+        tags: normalizeTags(t.tags),
+        trackingMs,
+        trackingSince,
+        totalWorkMs,
+        timeSegments,
+        completedAtMs,
+        workSessions
+      };
+    }
+
+    function fixParentIds(list) {
+      const ids = new Set(list.map((t) => t.id));
+      return list.map((t) => ({
+        ...t,
+        parentId: t.parentId && ids.has(t.parentId) ? t.parentId : null
+      }));
+    }
+
+    function loadTodos() {
+      try {
+        const v4 = localStorage.getItem(STORAGE_KEY);
+        if (v4) {
+          const parsed = JSON.parse(v4);
+          return Array.isArray(parsed) ? fixParentIds(parsed.map(normalizeTodo)) : [];
+        }
+        const v3 = localStorage.getItem(STORAGE_KEY_V3);
+        if (v3) {
+          const parsed = JSON.parse(v3);
+          const migrated = Array.isArray(parsed)
+            ? parsed.map((item) =>
+                normalizeTodo({
+                  ...item,
+                  trackingMs: 0,
+                  trackingSince: null,
+                  totalWorkMs: item.done ? 0 : null
+                })
+              )
+            : [];
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
+          return fixParentIds(migrated);
+        }
+        const v2 = localStorage.getItem(STORAGE_KEY_V2);
+        if (v2) {
+          const parsed = JSON.parse(v2);
+          const migrated = Array.isArray(parsed)
+            ? parsed.map((item) =>
+                normalizeTodo({
+                  ...item,
+                  parentId: null,
+                  tags: [],
+                  trackingMs: 0,
+                  trackingSince: null,
+                  totalWorkMs: item.done ? 0 : null
+                })
+              )
+            : [];
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
+          return fixParentIds(migrated);
+        }
+        const legacyRaw = localStorage.getItem(STORAGE_KEY_LEGACY);
+        if (legacyRaw) {
+          const legacy = JSON.parse(legacyRaw);
+          const migrated = Array.isArray(legacy)
+            ? legacy.map((item) =>
+                normalizeTodo({
+                  ...item,
+                  dueDate: "",
+                  priority: "medium",
+                  parentId: null,
+                  tags: [],
+                  trackingMs: 0,
+                  trackingSince: null,
+                  totalWorkMs: item.done ? 0 : null
+                })
+              )
+            : [];
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
+          return fixParentIds(migrated);
+        }
+        return [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveTodos() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(todos));
+    }
+
+    function pickSuggestions(count = 4) {
+      const pool = getSuggestionList();
+      if (pool.length === 0) return [];
+      const shuffled = [...pool].sort(() => Math.random() - 0.5);
+      return shuffled.slice(0, Math.min(count, pool.length));
+    }
+
+    function renderSuggestions() {
+      suggestions.innerHTML = activeSuggestions
+        .map(
+          (text) =>
+            `<button class="suggestion-chip" type="button" data-suggest="${escapeHtml(text)}">+ ${escapeHtml(text)}</button>`
+        )
+        .join("");
+    }
+
+    function descendantIdsOf(id) {
+      const out = new Set();
+      const walk = (pid) => {
+        for (const t of todos) {
+          if (t.parentId === pid) {
+            out.add(t.id);
+            walk(t.id);
+          }
+        }
+      };
+      walk(id);
+      return out;
+    }
+
+    function wouldCreateCycle(taskId, newParentId) {
+      if (!newParentId) return false;
+      let cur = newParentId;
+      const guard = new Set();
+      while (cur) {
+        if (cur === taskId) return true;
+        if (guard.has(cur)) return true;
+        guard.add(cur);
+        const p = todos.find((x) => x.id === cur);
+        cur = p && p.parentId ? p.parentId : null;
+      }
+      return false;
+    }
+
+    function parentOptionsHtml(excludeId, selectedId) {
+      const banned = excludeId ? new Set([excludeId, ...descendantIdsOf(excludeId)]) : null;
+      const opts = todos
+        .filter((t) => !banned || !banned.has(t.id))
+        .slice()
+        .sort((a, b) => todos.indexOf(a) - todos.indexOf(b));
+      return opts
+        .map((t) => {
+          let d = 0;
+          let p = t.parentId;
+          const seen = new Set();
+          while (p && !seen.has(p)) {
+            seen.add(p);
+            d += 1;
+            const par = todos.find((x) => x.id === p);
+            p = par ? par.parentId : null;
+          }
+          const prefix = d > 0 ? `${"—".repeat(Math.min(d, 4))} ` : "";
+          const sel = selectedId && t.id === selectedId ? " selected" : "";
+          return `<option value="${escapeHtml(t.id)}"${sel}>${escapeHtml(prefix + truncate(t.text, 42))}</option>`;
+        })
+        .join("");
+    }
+
+    function truncate(s, n) {
+      if (s.length <= n) return s;
+      return `${s.slice(0, n - 1)}…`;
+    }
+
+    function populateNewParentSelect() {
+      const current = newParentId.value;
+      newParentId.innerHTML = `<option value="">（メインタスクとして追加）</option>${parentOptionsHtml(null, current || null)}`;
+      const ids = new Set([...todos.map((t) => t.id), ""]);
+      if (current && ids.has(current)) newParentId.value = current;
+    }
+
+    function getAllTags() {
+      const s = new Set();
+      for (const t of todos) {
+        for (const tag of t.tags || []) s.add(tag);
+      }
+      return [...s].sort((a, b) => a.localeCompare(b, "ja"));
+    }
+
+    function renderTagFilters() {
+      const tags = getAllTags();
+      const chips = [
+        `<button type="button" class="filter ${filterTag == null ? "active" : ""}" data-tag-filter="">ラベル: すべて</button>`,
+        ...tags.map(
+          (tag) =>
+            `<button type="button" class="filter ${filterTag === tag ? "active" : ""}" data-tag-filter="${escapeHtml(tag)}">#${escapeHtml(tag)}</button>`
+        )
+      ];
+      tagFiltersEl.innerHTML = `<span class="tag-filters-label">絞り込み</span>${chips.join("")}`;
+    }
+
+    function getVisibleOrdered() {
+      const filtered = todos.filter((t) => {
+        if (currentFilter === "active" && t.done) return false;
+        if (currentFilter === "done" && !t.done) return false;
+        if (filterTag && !(t.tags || []).includes(filterTag)) return false;
+        return true;
+      });
+      const ids = new Set(filtered.map((t) => t.id));
+      const validIds = new Set(todos.map((t) => t.id));
+      const idx = (id) => todos.findIndex((t) => t.id === id);
+
+      function effectiveParent(t) {
+        if (!t.parentId || !validIds.has(t.parentId)) return null;
+        if (!ids.has(t.parentId)) return null;
+        return t.parentId;
+      }
+
+      const byParent = new Map();
+      for (const t of filtered) {
+        const pid = effectiveParent(t);
+        const key = pid;
+        if (!byParent.has(key)) byParent.set(key, []);
+        byParent.get(key).push(t);
+      }
+      for (const arr of byParent.values()) {
+        arr.sort((a, b) => idx(a.id) - idx(b.id));
+      }
+
+      const out = [];
+      function walk(parentId, depth) {
+        const kids = byParent.get(parentId) || [];
+        for (const t of kids) {
+          out.push({ todo: t, depth });
+          walk(t.id, depth + 1);
+        }
+      }
+      walk(null, 0);
+      return out;
+    }
+
+    function addTodo(text, dueDate, priority, tagsStr, parentIdValue) {
+      const trimmed = text.trim();
+      if (!trimmed) return;
+
+      let parentId = parentIdValue && String(parentIdValue).trim() ? String(parentIdValue).trim() : null;
+      if (parentId && !todos.some((t) => t.id === parentId)) parentId = null;
+
+      todos.unshift(
+        normalizeTodo({
+          id: crypto.randomUUID(),
+          text: trimmed,
+          done: false,
+          dueDate: dueDate || "",
+          priority: priority || "medium",
+          parentId,
+          tags: parseTagsInput(tagsStr || ""),
+          trackingMs: 0,
+          trackingSince: null,
+          totalWorkMs: null,
+          timeSegments: [],
+          completedAtMs: null,
+          workSessions: []
+        })
+      );
+      saveTodos();
+      render();
+    }
+
+    function formatTimestamp(ms) {
+      try {
+        return new Date(ms).toLocaleString("ja-JP", { dateStyle: "short", timeStyle: "medium" });
+      } catch {
+        return "—";
+      }
+    }
+
+    function computeSessionStats(workSessions) {
+      const ws = workSessions || [];
+      if (ws.length === 0) return null;
+      let sum = 0;
+      for (const s of ws) sum += s.totalWorkMs || 0;
+      return { count: ws.length, sum, avg: sum / ws.length };
+    }
+
+    function renderTimeStatsRow(workSessions) {
+      const st = computeSessionStats(workSessions);
+      if (!st) return "";
+      return `
+        <div class="time-stats-row">
+          <span>完了 <strong>${st.count}</strong> 回</span>
+          <span>累計 <strong>${escapeHtml(formatDuration(st.sum))}</strong></span>
+          <span>平均 <strong>${escapeHtml(formatDuration(Math.round(st.avg)))}</strong></span>
+        </div>
+      `;
+    }
+
+    function renderTimeLogBlock(todo, opts) {
+      const done = opts && opts.done;
+      const ws = normalizeWorkSessions(todo.workSessions || []);
+      const currentSegs = normalizeTimeSegments(todo.timeSegments || []);
+      const statsHtml = ws.length ? renderTimeStatsRow(ws) : "";
+
+      if (done) {
+        const legacyNote =
+          ws.length === 0 && (todo.totalWorkMs ?? 0) > 0
+            ? `<p class="time-log-note">※ 区間のタイムスタンプはありません（このタスクは更新前に完了したため、合計時間のみ保持されています）</p>`
+            : "";
+        const allSegs = [];
+        ws.forEach((sess) => {
+          allSegs.push(...normalizeTimeSegments(sess.timeSegments));
+        });
+        if (allSegs.length === 0 && !legacyNote) return "";
+        const lines = allSegs.map((s, idx) => {
+          const dur = formatDuration(s.endMs - s.startMs);
+          return `<li>${idx + 1}. ${escapeHtml(formatTimestamp(s.startMs))} 〜 ${escapeHtml(
+            formatTimestamp(s.endMs)
+          )}（${escapeHtml(dur)}）</li>`;
+        });
+        return `
+        <details class="time-log-details">
+          <summary>タイムスタンプ・履歴を確認</summary>
+          ${statsHtml}
+          ${lines.length ? `<ol class="time-log-list">${lines.join("")}</ol>` : ``}
+          ${legacyNote}
+        </details>
+      `;
+      }
+
+      const allSegs = [];
+      ws.forEach((sess) => {
+        allSegs.push(...normalizeTimeSegments(sess.timeSegments));
+      });
+      allSegs.push(...currentSegs);
+      if (allSegs.length === 0) {
+        return "";
+      }
+      const lines = allSegs.map((s, idx) => {
+        const dur = formatDuration(s.endMs - s.startMs);
+        return `<li>${idx + 1}. ${escapeHtml(formatTimestamp(s.startMs))} 〜 ${escapeHtml(
+          formatTimestamp(s.endMs)
+        )}（${escapeHtml(dur)}）</li>`;
+      });
+      return `
+        <details class="time-log-details">
+          <summary>タイムスタンプを確認（過去の完了＋今回）</summary>
+          ${statsHtml}
+          <ol class="time-log-list">${lines.join("")}</ol>
+        </details>
+      `;
+    }
+
+    function formatDuration(ms) {
+      let n = Math.max(0, Math.floor(Number(ms) || 0));
+      const s = Math.floor(n / 1000);
+      const h = Math.floor(s / 3600);
+      const m = Math.floor((s % 3600) / 60);
+      const sec = s % 60;
+      if (h > 0) return `${h}時間${m}分${sec}秒`;
+      if (m > 0) return `${m}分${sec}秒`;
+      return `${sec}秒`;
+    }
+
+    function getElapsedMs(todo) {
+      const base = todo.trackingMs || 0;
+      if (todo.done) return todo.totalWorkMs ?? 0;
+      if (todo.trackingSince != null) {
+        return base + (Date.now() - todo.trackingSince);
+      }
+      return base;
+    }
+
+    function isTimerRunning(todo) {
+      return !todo.done && todo.trackingSince != null;
+    }
+
+    function startTimer(id) {
+      todos = todos.map((t) => {
+        if (t.id !== id || t.done || t.trackingSince != null) return t;
+        return normalizeTodo({ ...t, trackingSince: Date.now() });
+      });
+      saveTodos();
+      render();
+    }
+
+    function pauseTimer(id) {
+      todos = todos.map((t) => {
+        if (t.id !== id || t.done || !t.trackingSince) return t;
+        const end = Date.now();
+        const start = t.trackingSince;
+        const add = end - start;
+        const nextSegs = [...normalizeTimeSegments(t.timeSegments || []), { startMs: start, endMs: end }];
+        return normalizeTodo({
+          ...t,
+          trackingMs: (t.trackingMs || 0) + add,
+          trackingSince: null,
+          timeSegments: nextSegs
+        });
+      });
+      saveTodos();
+      render();
+    }
+
+    function completeTimer(id) {
+      todos = todos.map((t) => {
+        if (t.id !== id || t.done) return t;
+        const end = Date.now();
+        let segments = [...normalizeTimeSegments(t.timeSegments || [])];
+        if (t.trackingSince) {
+          segments.push({ startMs: t.trackingSince, endMs: end });
+        }
+        segments = normalizeTimeSegments(segments);
+        const totalFromSegs = segments.reduce((acc, s) => acc + (s.endMs - s.startMs), 0);
+        let ms = t.trackingMs || 0;
+        if (t.trackingSince) ms += end - t.trackingSince;
+        const totalWorkMs = segments.length > 0 ? totalFromSegs : ms;
+        const prevSessions = normalizeWorkSessions(t.workSessions || []);
+        const attempt = prevSessions.length + 1;
+        const session = {
+          attempt,
+          totalWorkMs,
+          timeSegments: segments,
+          completedAtMs: end
+        };
+        const workSessions = [...prevSessions, session];
+        return normalizeTodo({
+          ...t,
+          done: true,
+          trackingMs: 0,
+          trackingSince: null,
+          totalWorkMs,
+          timeSegments: segments,
+          completedAtMs: end,
+          workSessions
+        });
+      });
+      saveTodos();
+      render();
+    }
+
+    function reuseTodo(id) {
+      const idx = todos.findIndex((t) => t.id === id);
+      if (idx === -1) return;
+      const t = todos[idx];
+      if (!t.done) return;
+      if (editingId === id) editingId = null;
+      const fresh = normalizeTodo({
+        ...t,
+        done: false,
+        trackingMs: 0,
+        trackingSince: null,
+        totalWorkMs: null,
+        timeSegments: [],
+        completedAtMs: null,
+        workSessions: normalizeWorkSessions(t.workSessions || [])
+      });
+      todos.splice(idx, 1);
+      todos.unshift(fresh);
+      saveTodos();
+      render();
+    }
+
+    function deleteTodo(id) {
+      if (editingId === id) editingId = null;
+      const remove = new Set([id, ...descendantIdsOf(id)]);
+      todos = todos.filter((todo) => !remove.has(todo.id));
+      saveTodos();
+      render();
+    }
+
+    function clearDoneTodos() {
+      todos = fixParentIds(todos.filter((todo) => !todo.done));
+      if (editingId && !todos.some((t) => t.id === editingId)) editingId = null;
+      saveTodos();
+      render();
+    }
+
+    function updateTodo(id, patch) {
+      const nextParent = patch.parentId !== undefined ? patch.parentId : undefined;
+      if (nextParent !== undefined && nextParent !== null && nextParent !== "") {
+        if (wouldCreateCycle(id, String(nextParent))) {
+          alert("その親タスクにはできません（循環してしまいます）。");
+          return false;
+        }
+      }
+      todos = todos.map((todo) => {
+        if (todo.id !== id) return todo;
+        const merged = { ...todo, ...patch };
+        if (patch.tags !== undefined) merged.tags = normalizeTags(patch.tags);
+        return normalizeTodo(merged);
+      });
+      todos = fixParentIds(todos);
+      saveTodos();
+      editingId = null;
+      render();
+      return true;
+    }
+
+    function startEdit(id) {
+      editingId = id;
+      render();
+    }
+
+    function cancelEdit() {
+      editingId = null;
+      render();
+    }
+
+    function priorityLabel(p) {
+      if (p === "high") return "高";
+      if (p === "low") return "低";
+      return "中";
+    }
+
+    function isOverdue(todo) {
+      if (todo.done || !todo.dueDate) return false;
+      const d = new Date(todo.dueDate + "T23:59:59");
+      return d < new Date();
+    }
+
+    function attemptBadgeHtml(todo) {
+      const ws = normalizeWorkSessions(todo.workSessions || []);
+      if (todo.done) {
+        if (ws.length === 0) return "";
+        return `<span class="badge badge-attempt" title="このタスクを完了にした累計回数">第${ws.length}回完了</span>`;
+      }
+      if (ws.length >= 1) {
+        return `<span class="badge badge-attempt" title="再利用後の取り組み回数">第${ws.length + 1}回目</span>`;
+      }
+      return "";
+    }
+
+    function renderTimerColumn(todo) {
+      const idAttr = escapeHtml(todo.id);
+      if (todo.done) {
+        const tw = todo.totalWorkMs ?? 0;
+        const logHtml = renderTimeLogBlock(todo, { done: true });
+        return `
+      <div class="timer-stack">
+        <span class="badge badge-time" title="最後に完了した回の作業時間">⏱ 今回 ${escapeHtml(formatDuration(tw))}</span>
+        ${logHtml}
+      </div>
+    `;
+      }
+      const running = isTimerRunning(todo);
+      const hasAccum = (todo.trackingMs || 0) > 0;
+      const startDisabled = running ? " disabled" : "";
+      const pauseDisabled = running ? "" : " disabled";
+      const timerLine = running
+        ? `<div class="timer-line">経過 <strong data-live-elapsed="${idAttr}">${escapeHtml(formatDuration(getElapsedMs(todo)))}</strong></div>`
+        : hasAccum
+          ? `<div class="timer-line">中断中（累計 <strong>${escapeHtml(formatDuration(todo.trackingMs))}</strong>）</div>`
+          : `<div class="timer-line">未開始</div>`;
+      const activeLogHtml = renderTimeLogBlock(todo, { done: false });
+      return `
+      <div class="timer-stack">
+        <div class="timer-btns">
+          <button type="button" class="timer-btn timer-start" data-action="timer-start" data-id="${idAttr}"${startDisabled}>開始</button>
+          <button type="button" class="timer-btn timer-pause" data-action="timer-pause" data-id="${idAttr}"${pauseDisabled}>中断</button>
+          <button type="button" class="timer-btn timer-done" data-action="timer-done" data-id="${idAttr}">完了</button>
+        </div>
+        ${timerLine}
+        ${activeLogHtml}
+      </div>
+    `;
+    }
+
+    function renderTodoRow(todo, depth) {
+      const overdue = isOverdue(todo);
+      const dueBadge =
+        todo.dueDate !== ""
+          ? `<span class="badge badge-due ${overdue ? "overdue" : ""}" title="締切">📅 ${escapeHtml(todo.dueDate)}${overdue ? "（期限超過）" : ""}</span>`
+          : "";
+      const priClass =
+        todo.priority === "high"
+          ? "badge-priority-high"
+          : todo.priority === "low"
+            ? "badge-priority-low"
+            : "badge-priority-medium";
+
+      const isSub = Boolean(todo.parentId);
+      const roleBadge = isSub
+        ? `<span class="badge badge-role" title="サブタスク">サブ</span>`
+        : `<span class="badge badge-role" title="メインタスク">メイン</span>`;
+
+      const parent = todo.parentId ? todos.find((x) => x.id === todo.parentId) : null;
+      const parentHint =
+        parent && parent.text
+          ? `<span class="badge" title="親タスク">↳ ${escapeHtml(truncate(parent.text, 28))}</span>`
+          : "";
+
+      const tags = (todo.tags || [])
+        .map(
+          (tag) =>
+            `<button type="button" class="badge badge-tag" data-action="filter-tag" data-tag="${escapeHtml(tag)}" title="このラベルで絞り込み">#${escapeHtml(tag)}</button>`
+        )
+        .join("");
+
+      if (editingId === todo.id) {
+        const parentSelectHtml = `<select class="priority-select" data-edit-field="parentId" data-id="${escapeHtml(todo.id)}" aria-label="親タスク">
+            <option value="" ${!todo.parentId ? "selected" : ""}>（メインタスク）</option>
+            ${parentOptionsHtml(todo.id, todo.parentId || null)}
+          </select>`;
+        return `
+          <li class="todo-item ${isSub ? "is-sub" : ""}" style="--nest-depth:${depth}">
+            <div class="timer-stack" aria-hidden="true">
+              <span class="badge" style="opacity: 0.65">タイマー</span>
+            </div>
+            <div class="todo-body todo-edit">
+              <input class="edit-text" type="text" value="${escapeHtml(todo.text)}" data-edit-field="text" data-id="${escapeHtml(todo.id)}" />
+              <div class="field-inline">
+                <label class="field-label" for="editTags-${escapeHtml(todo.id)}">ラベル（カンマ区切り）</label>
+                <input id="editTags-${escapeHtml(todo.id)}" class="date-input" type="text" value="${escapeHtml((todo.tags || []).join(", "))}" data-edit-field="tags" data-id="${escapeHtml(todo.id)}" />
+              </div>
+              <div class="edit-row">
+                <div class="field-inline">
+                  <label class="field-label" for="editDue-${escapeHtml(todo.id)}">締切日</label>
+                  <input id="editDue-${escapeHtml(todo.id)}" class="date-input" type="date" value="${escapeHtml(todo.dueDate)}" data-edit-field="dueDate" data-id="${escapeHtml(todo.id)}" />
+                </div>
+                <select class="priority-select" data-edit-field="priority" data-id="${escapeHtml(todo.id)}" aria-label="編集中の優先度">
+                  <option value="high" ${todo.priority === "high" ? "selected" : ""}>高</option>
+                  <option value="medium" ${todo.priority === "medium" ? "selected" : ""}>中</option>
+                  <option value="low" ${todo.priority === "low" ? "selected" : ""}>低</option>
+                </select>
+              </div>
+              <div class="field-inline">
+                <label class="field-label">親タスク</label>
+                ${parentSelectHtml}
+              </div>
+              <div class="edit-actions">
+                <button type="button" class="btn-save" data-action="save-edit" data-id="${escapeHtml(todo.id)}">保存</button>
+                <button type="button" class="btn-cancel" data-action="cancel-edit">キャンセル</button>
+              </div>
+            </div>
+            <div class="todo-actions"></div>
+          </li>
+        `;
+      }
+
+      return `
+        <li class="todo-item ${todo.done ? "done" : ""} ${isSub ? "is-sub" : ""}" style="--nest-depth:${depth}">
+          ${renderTimerColumn(todo)}
+          <div class="todo-body">
+            <span class="todo-text">${escapeHtml(todo.text)}</span>
+            <div class="todo-meta">
+              ${roleBadge}
+              ${attemptBadgeHtml(todo)}
+              ${parentHint}
+              <span class="badge ${priClass}">優先度: ${priorityLabel(todo.priority)}</span>
+              ${dueBadge}
+              ${tags}
+            </div>
+          </div>
+          <div class="todo-actions">
+            ${todo.done ? `<button type="button" class="reuse-btn" data-action="reuse" data-id="${escapeHtml(todo.id)}" title="未完了に戻して再挑戦。過去の完了記録・タイムスタンプ履歴は保持されます">再利用</button>` : ""}
+            <button type="button" class="edit-btn" data-action="start-edit" data-id="${escapeHtml(todo.id)}">編集</button>
+            <button type="button" class="delete" data-action="delete" data-id="${escapeHtml(todo.id)}">削除</button>
+          </div>
+        </li>
+      `;
+    }
+
+    function render() {
+      const visibleRows = getVisibleOrdered();
+
+      todoList.innerHTML = visibleRows.map(({ todo, depth }) => renderTodoRow(todo, depth)).join("");
+
+      const total = todos.length;
+      const active = todos.filter((todo) => !todo.done).length;
+      stats.textContent = `${total}件（未完了 ${active}件）`;
+
+      filterButtons.forEach((btn) => {
+        btn.classList.toggle("active", btn.dataset.filter === currentFilter);
+      });
+
+      renderTagFilters();
+      populateNewParentSelect();
+    }
+
+    function escapeHtml(str) {
+      return str
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
+    addBtn.addEventListener("click", () => {
+      addTodo(todoInput.value, newDueDate.value, newPriority.value, newTags.value, newParentId.value);
+      todoInput.value = "";
+      newDueDate.value = "";
+      newPriority.value = "medium";
+      newTags.value = "";
+      newParentId.value = "";
+      todoInput.focus();
+      activeSuggestions = pickSuggestions();
+      renderSuggestions();
+    });
+
+    todoInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        addTodo(todoInput.value, newDueDate.value, newPriority.value, newTags.value, newParentId.value);
+        todoInput.value = "";
+        newDueDate.value = "";
+        newPriority.value = "medium";
+        newTags.value = "";
+        newParentId.value = "";
+        activeSuggestions = pickSuggestions();
+        renderSuggestions();
+      }
+    });
+
+    toggleSuggestionEdit.addEventListener("click", () => {
+      const open = suggestionEditPanel.hasAttribute("hidden");
+      if (open) {
+        fillSuggestionEditor();
+        suggestionEditPanel.removeAttribute("hidden");
+        toggleSuggestionEdit.setAttribute("aria-expanded", "true");
+        suggestionEditText.focus();
+      } else {
+        suggestionEditPanel.setAttribute("hidden", "");
+        toggleSuggestionEdit.setAttribute("aria-expanded", "false");
+      }
+    });
+
+    saveSuggestionListBtn.addEventListener("click", () => {
+      if (!setSuggestionListFromTextarea()) return;
+      activeSuggestions = pickSuggestions();
+      renderSuggestions();
+      suggestionEditPanel.setAttribute("hidden", "");
+      toggleSuggestionEdit.setAttribute("aria-expanded", "false");
+    });
+
+    resetSuggestionListBtn.addEventListener("click", () => {
+      resetSuggestionListToDefault();
+      suggestionEditPanel.setAttribute("hidden", "");
+      toggleSuggestionEdit.setAttribute("aria-expanded", "false");
+    });
+
+    suggestions.addEventListener("click", (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+      const suggested = target.dataset.suggest;
+      if (!suggested) return;
+
+      if (todoInput.value.trim() === suggested) {
+        addTodo(suggested, newDueDate.value, newPriority.value, newTags.value, newParentId.value);
+        todoInput.value = "";
+        newDueDate.value = "";
+        newPriority.value = "medium";
+        newTags.value = "";
+        newParentId.value = "";
+        activeSuggestions = pickSuggestions();
+        renderSuggestions();
+        return;
+      }
+
+      todoInput.value = suggested;
+      todoInput.focus();
+      todoInput.setSelectionRange(todoInput.value.length, todoInput.value.length);
+    });
+
+    todoList.addEventListener("click", (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+
+      const action = target.dataset.action;
+      const id = target.dataset.id;
+      if (action === "timer-start" && id) {
+        startTimer(id);
+        return;
+      }
+      if (action === "timer-pause" && id) {
+        pauseTimer(id);
+        return;
+      }
+      if (action === "timer-done" && id) {
+        completeTimer(id);
+        return;
+      }
+      if (action === "reuse" && id) {
+        reuseTodo(id);
+        return;
+      }
+      if (action === "start-edit" && id) {
+        startEdit(id);
+        return;
+      }
+      if (action === "cancel-edit") {
+        cancelEdit();
+        return;
+      }
+      if (action === "save-edit" && id) {
+        const row = target.closest(".todo-item");
+        if (!row) return;
+        const textInput = row.querySelector('[data-edit-field="text"]');
+        const dueInput = row.querySelector('[data-edit-field="dueDate"]');
+        const priInput = row.querySelector('[data-edit-field="priority"]');
+        const tagsField = row.querySelector('[data-edit-field="tags"]');
+        const parentField = row.querySelector('[data-edit-field="parentId"]');
+        const nextText = textInput instanceof HTMLInputElement ? textInput.value : "";
+        const nextDue = dueInput instanceof HTMLInputElement ? dueInput.value : "";
+        const nextPri = priInput instanceof HTMLSelectElement ? priInput.value : "medium";
+        const nextTags = tagsField instanceof HTMLInputElement ? tagsField.value : "";
+        let nextParent = parentField instanceof HTMLSelectElement ? parentField.value : "";
+        if (nextParent === "") nextParent = null;
+        const trimmed = nextText.trim();
+        if (!trimmed) {
+          cancelEdit();
+          return;
+        }
+        updateTodo(id, { text: trimmed, dueDate: nextDue, priority: nextPri, tags: nextTags, parentId: nextParent });
+        return;
+      }
+      if (action === "filter-tag" && target.dataset.tag) {
+        filterTag = target.dataset.tag;
+        render();
+        return;
+      }
+      if (!action || !id) return;
+
+      if (action === "delete") deleteTodo(id);
+    });
+
+    tagFiltersEl.addEventListener("click", (event) => {
+      const btn = event.target.closest("button[data-tag-filter]");
+      if (!(btn instanceof HTMLButtonElement)) return;
+      const v = btn.dataset.tagFilter;
+      filterTag = v === "" || v === undefined ? null : v;
+      render();
+    });
+
+    filterButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        currentFilter = btn.dataset.filter || "all";
+        render();
+      });
+    });
+
+    clearDoneBtn.addEventListener("click", clearDoneTodos);
+
+    activeSuggestions = pickSuggestions();
+    renderSuggestions();
+    render();
+
+    setInterval(() => {
+      if (!todos.some((t) => !t.done && t.trackingSince != null)) return;
+      document.querySelectorAll("[data-live-elapsed]").forEach((el) => {
+        const tid = el.getAttribute("data-live-elapsed");
+        if (!tid) return;
+        const t = todos.find((x) => x.id === tid);
+        if (!t || t.done || t.trackingSince == null) return;
+        el.textContent = formatDuration(getElapsedMs(t));
+      });
+    }, 1000);
+  </script>
+</body>
+</html>
